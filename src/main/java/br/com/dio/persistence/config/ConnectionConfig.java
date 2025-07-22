@@ -1,6 +1,5 @@
 package br.com.dio.persistence.config;
 
-import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
 
 import java.sql.Connection;
