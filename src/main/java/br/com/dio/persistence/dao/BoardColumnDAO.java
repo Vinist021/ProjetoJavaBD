@@ -13,19 +13,20 @@ import java.util.List;
 import java.util.Optional;
 
 import static br.com.dio.persistence.entity.BoardColumnKindEnum.findByName;
+import static java.util.Objects.isNull;
 
 @RequiredArgsConstructor
 public class BoardColumnDAO {
 
     private final Connection connection;
 
-    public BoardColumnEntity insert(final BoardColumnEntity entity) throws SQLException  {
+    public BoardColumnEntity insert(final BoardColumnEntity entity) throws SQLException {
         var sql = "INSERT INTO BOARDS_COLUMNS (name, `order`, kind, board_id) VALUES (?, ?, ?, ?);";
         try(var statement = connection.prepareStatement(sql)){
             var i = 1;
-            statement.setString(i++, entity.getName());
-            statement.setInt(i++, entity.getOrder());
-            statement.setString(i++, entity.getKind().name());
+            statement.setString(i ++, entity.getName());
+            statement.setInt(i ++, entity.getOrder());
+            statement.setString(i ++, entity.getKind().name());
             statement.setLong(i, entity.getBoard().getId());
             statement.executeUpdate();
             if (statement instanceof StatementImpl impl){
@@ -54,19 +55,19 @@ public class BoardColumnDAO {
         }
     }
 
-    public List<BoardColumnDTO> findByBoardIdWithDetails(final Long boardId) throws SQLException{
+    public List<BoardColumnDTO> findByBoardIdWithDetails(final Long boardId) throws SQLException {
         List<BoardColumnDTO> dtos = new ArrayList<>();
         var sql =
                 """
                 SELECT bc.id,
                        bc.name,
-                       bc.kind
-                       COUNT(SELECT c.id
-                             FROM CARDS c
-                             WHERE c.board_column_id = bc.id) cards_amount
-                 FROM BOARDS_COLUMNS bc
+                       bc.kind,
+                       (SELECT COUNT(c.id)
+                               FROM CARDS c
+                              WHERE c.board_column_id = bc.id) cards_amount
+                  FROM BOARDS_COLUMNS bc
                  WHERE board_id = ?
-                 ORDER BY `order`
+                 ORDER BY `order`;
                 """;
         try(var statement = connection.prepareStatement(sql)){
             statement.setLong(1, boardId);
@@ -87,17 +88,17 @@ public class BoardColumnDAO {
 
     public Optional<BoardColumnEntity> findById(final Long boardId) throws SQLException{
         var sql =
-        """
-        SELECT  bc.name,
-                bc.kind,
-                c.id,
-                c.title,
-                c.description
-          FROM BOARDS_COLUMNS bc
-         INNER JOIN CARDS c
-            ON c.board_column_id = bc.id
-         WHERE bc.id = ?
-        """;
+                """
+                SELECT bc.name,
+                       bc.kind,
+                       c.id,
+                       c.title,
+                       c.description
+                  FROM BOARDS_COLUMNS bc
+                  LEFT JOIN CARDS c
+                    ON c.board_column_id = bc.id
+                 WHERE bc.id = ?;
+                """;
         try(var statement = connection.prepareStatement(sql)){
             statement.setLong(1, boardId);
             statement.executeQuery();
@@ -108,11 +109,15 @@ public class BoardColumnDAO {
                 entity.setKind(findByName(resultSet.getString("bc.kind")));
                 do {
                     var card = new CardEntity();
+                    if (isNull(resultSet.getString("c.title"))){
+                        break;
+                    }
                     card.setId(resultSet.getLong("c.id"));
                     card.setTitle(resultSet.getString("c.title"));
                     card.setDescription(resultSet.getString("c.description"));
                     entity.getCards().add(card);
-                } while(resultSet.next());
+                }while (resultSet.next());
+                return Optional.of(entity);
             }
             return Optional.empty();
         }
