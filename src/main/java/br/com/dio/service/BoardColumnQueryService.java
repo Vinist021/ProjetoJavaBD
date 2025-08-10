@@ -17,4 +17,5 @@ public class BoardColumnQueryService {
         var dao = new BoardColumnDAO(connection);
         return dao.findById(id);
     }
+
 }

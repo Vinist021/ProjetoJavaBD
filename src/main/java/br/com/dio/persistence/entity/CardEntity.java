@@ -2,8 +2,6 @@ package br.com.dio.persistence.entity;
 
 import lombok.Data;
 
-import static br.com.dio.persistence.entity.BoardColumnKindEnum.INITIAL;
-
 @Data
 public class CardEntity {
 

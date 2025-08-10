@@ -13,7 +13,6 @@ import java.sql.SQLException;
 import java.util.Scanner;
 
 import static br.com.dio.persistence.config.ConnectionConfig.getConnection;
-import static br.com.dio.persistence.entity.BoardColumnKindEnum.INITIAL;
 
 @AllArgsConstructor
 public class BoardMenu {
@@ -67,7 +66,7 @@ public class BoardMenu {
         card.setDescription(scanner.next());
         card.setBoardColumn(entity.getInitialColumn());
         try (var connection = getConnection()){
-            new CardService(connection).insert(card);
+            new CardService(connection).create(card);
 
         }
 

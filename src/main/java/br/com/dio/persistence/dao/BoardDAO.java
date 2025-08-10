@@ -11,14 +11,14 @@ import java.util.Optional;
 @AllArgsConstructor
 public class BoardDAO {
 
-    private final Connection connection;
+    private Connection connection;
 
     public BoardEntity insert(final BoardEntity entity) throws SQLException {
         var sql = "INSERT INTO BOARDS (name) values (?);";
         try(var statement = connection.prepareStatement(sql)){
             statement.setString(1, entity.getName());
             statement.executeUpdate();
-            if(statement instanceof StatementImpl impl){
+            if (statement instanceof StatementImpl impl){
                 entity.setId(impl.getLastInsertID());
             }
         }
@@ -39,7 +39,7 @@ public class BoardDAO {
             statement.setLong(1, id);
             statement.executeQuery();
             var resultSet = statement.getResultSet();
-            if(resultSet.next()){
+            if (resultSet.next()){
                 var entity = new BoardEntity();
                 entity.setId(resultSet.getLong("id"));
                 entity.setName(resultSet.getString("name"));

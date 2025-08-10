@@ -12,11 +12,14 @@ import java.util.List;
 import java.util.Scanner;
 
 import static br.com.dio.persistence.config.ConnectionConfig.getConnection;
-import static br.com.dio.persistence.entity.BoardColumnKindEnum.*;
+import static br.com.dio.persistence.entity.BoardColumnKindEnum.CANCEL;
+import static br.com.dio.persistence.entity.BoardColumnKindEnum.FINAL;
+import static br.com.dio.persistence.entity.BoardColumnKindEnum.INITIAL;
+import static br.com.dio.persistence.entity.BoardColumnKindEnum.PENDING;
 
 public class MainMenu {
 
-    private final Scanner scanner = new Scanner(System.in);
+    private final Scanner scanner = new Scanner(System.in).useDelimiter("\n");
 
     public void execute() throws SQLException {
         System.out.println("Bem vindo ao gerenciador de boards, escolha a opção desejada");
@@ -33,7 +36,6 @@ public class MainMenu {
                 case 3 -> deleteBoard();
                 case 4 -> System.exit(0);
                 default -> System.out.println("Opção inválida, informe uma opção do menu");
-
             }
         }
     }
@@ -43,7 +45,7 @@ public class MainMenu {
         System.out.println("Informe o nome do seu board");
         entity.setName(scanner.next());
 
-        System.out.println("Seu board terá colunas além das 3 padrões? Se sim, informe quantas, senão digite '0'");
+        System.out.println("Seu board terá colunas além das 3 padrões? Se sim informe quantas, senão digite '0'");
         var additionalColumns = scanner.nextInt();
 
         List<BoardColumnEntity> columns = new ArrayList<>();
@@ -60,12 +62,12 @@ public class MainMenu {
             columns.add(pendingColumn);
         }
 
-        System.out.println("Informe o nome da coluna de final");
+        System.out.println("Informe o nome da coluna final");
         var finalColumnName = scanner.next();
         var finalColumn = createColumn(finalColumnName, FINAL, additionalColumns + 1);
         columns.add(finalColumn);
 
-        System.out.println("Informe a coluna de cancelamento do board ");
+        System.out.println("Informe o nome da coluna de cancelamento do baord");
         var cancelColumnName = scanner.next();
         var cancelColumn = createColumn(cancelColumnName, CANCEL, additionalColumns + 2);
         columns.add(cancelColumn);
@@ -75,6 +77,7 @@ public class MainMenu {
             var service = new BoardService(connection);
             service.insert(entity);
         }
+
     }
 
     private void selectBoard() throws SQLException {
@@ -84,22 +87,22 @@ public class MainMenu {
             var queryService = new BoardQueryService(connection);
             var optional = queryService.findById(id);
             optional.ifPresentOrElse(
-                    b ->  new BoardMenu(b).execute(),
-                    () -> System.out.printf("Não foi encontrado um board com id %s\n", id));
+                    b -> new BoardMenu(b).execute(),
+                    () -> System.out.printf("Não foi encontrado um board com id %s\n", id)
+            );
         }
     }
 
     private void deleteBoard() throws SQLException {
-        System.out.println("Informe o id do board que será excluído");
+        System.out.println("Informe o id do board que será excluido");
         var id = scanner.nextLong();
         try(var connection = getConnection()){
             var service = new BoardService(connection);
-            if (service.delete(id)) {
-                System.out.printf("O Board %s foi exluído\n", id);
-            } else{
+            if (service.delete(id)){
+                System.out.printf("O board %s foi excluido\n", id);
+            } else {
                 System.out.printf("Não foi encontrado um board com id %s\n", id);
             }
-
         }
     }
 

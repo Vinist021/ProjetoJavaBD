@@ -13,9 +13,7 @@ import static lombok.AccessLevel.PRIVATE;
 public final class OffsetDateTimeConverter {
 
     public static OffsetDateTime toOffsetDateTime(final Timestamp value){
-
         return nonNull(value) ? OffsetDateTime.ofInstant(value.toInstant(), UTC) : null;
-
     }
 
 }
